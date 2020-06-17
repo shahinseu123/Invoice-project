@@ -3,17 +3,20 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreInvoiceRequest;
 use App\Invoice;
+use App\Repository\Invoice\CreateInvoice;
+use App\Repository\Invoice\DeleteInvoice;
+use App\Repository\Invoice\ShowInvoice;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class InvoiceController extends Controller
 {
 
     public function __construct()
-{
-    $this->middleware('auth:api');
-}
+    {
+        $this->middleware('auth:api');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -21,10 +24,8 @@ class InvoiceController extends Controller
      */
     public function index()
     {
-        {
-            $invoice = Invoice::with('InvoiceProduct')->get();
-            return $invoice;
-        }
+        $invoice = Invoice::with('InvoiceProduct')->get();
+        return $invoice;
     }
 
 
@@ -34,55 +35,22 @@ class InvoiceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreInvoiceRequest $request, CreateInvoice $createInvoice)
     {
-        $request->validate([
-            'customer' => 'required',
-            'customerPhone' => 'required',
-            'customerEmail' => 'required',
-            'shipTo' => 'required',
-            'quotationDate' => 'required',
-            // 'quotationNumber' => 'required',
-            'paymentMethod' => 'required',
-            'shippingCost' => 'required',
-            'subtotal' => 'required',
-            'total' => 'required',
-            'priceInWord' => 'required',
-            // 'authorisedBy' => 'required',
-            'delivaryDate' => 'required',
-            'currency' => 'required'
-        ]);
-
-        $invoice = new Invoice();
-        $invoice->customer = $request->customer;
-        $invoice->shipTo = $request->shipTo;
-        $invoice->quotationDate = $request->quotationDate;
-        $invoice->quotationNumber = $this->invoiceNumber();
-        // $invoice->quotationNumber = 'INV4387956';
-        $invoice->paymentMethod = $request->paymentMethod;
-        $invoice->shippingCost = $request->shippingCost;
-        $invoice->subtotal = $request->subtotal;
-        $invoice->total = $request->total;
-        $invoice->priceInWord = $request->priceInWord;
-        $invoice->authorisedBy = Auth::user()->name;
-        $invoice->delivaryDate = $request->delivaryDate;
-        $invoice->currency = $request->currency;
-
-        $invoice->save();
-
+        $createInvoice->create($request, $this->invoiceNumber());
     }
 
     function invoiceNumber()
     {
         $latest = Invoice::latest()->first();
 
-        if (! $latest) {
+        if (!$latest) {
             return 'INV0001';
         }
 
         $string = preg_replace("/[^0-9\.]/", '', $latest->quotationNumber);
 
-        return 'INV' . sprintf('%04d', $string+1);
+        return 'INV' . sprintf('%04d', $string + 1);
     }
 
     /**
@@ -91,11 +59,10 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id, ShowInvoice $showInvoice)
     {
-        $invoice = Invoice::where('id', $id)->with('InvoiceProduct')->first();
-        return $invoice;
-        // return response()->json($invoice);
+        $invoice = $showInvoice->show($id);
+        return response()->json($invoice);
     }
 
     /**
@@ -116,9 +83,8 @@ class InvoiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(DeleteInvoice $deleteInvoice, $id)
     {
-        $invo = Invoice::findOrFail($id);
-        $invo->delete();
+        $deleteInvoice->delete($id);
     }
 }

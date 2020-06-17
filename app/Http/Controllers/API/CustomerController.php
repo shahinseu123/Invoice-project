@@ -5,7 +5,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Model\Customer;
-use App\Repository\customerRepository\StoreCustomer\StoreCustomer;
+use App\Repository\customerRepository\DeleteCustomer;
+use App\Repository\customerRepository\ShowCustomer;
+use App\Repository\customerRepository\StoreCustomer;
+use App\Repository\customerRepository\UpdateCustomer;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -15,9 +18,9 @@ class CustomerController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(ShowCustomer $customer)
     {
-        $customer = Customer::orderBy('created_at', 'desc')->get();
+        $customer = $customer->showCustomer();
         return $customer;
     }
 
@@ -40,7 +43,6 @@ class CustomerController extends Controller
      */
     public function show($id)
     {
-        
     }
 
     /**
@@ -50,10 +52,9 @@ class CustomerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, UpdateCustomer $updateCustomer)
     {
-        $customer = Customer::findOrFail($id);
-        $customer->update($request->all());
+        $updateCustomer->update($request, $id);
     }
 
     /**
@@ -62,16 +63,14 @@ class CustomerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($id, DeleteCustomer $customer)
     {
-        $customer = Customer::findOrFail($id);
-        $customer->delete();
+        $customer->delete($id);
     }
 
-    public function single_customer($emp){
+    public function single_customer($emp)
+    {
         $customer = Customer::where(['name' => $emp])->first();
-        return response()->json($customer);
-        // return ['msg' => 'Success'];
-
+        return $customer;
     }
 }

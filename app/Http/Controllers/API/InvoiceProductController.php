@@ -5,15 +5,16 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Invoice;
 use App\InvoiceProduct;
+use App\Repository\InvoiceProduct\CreateInvoiceProduct;
 use Illuminate\Http\Request;
 
 
 class InvoiceProductController extends Controller
 {
     public function __construct()
-{
-    $this->middleware('auth:api');
-}
+    {
+        $this->middleware('auth:api');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -31,21 +32,9 @@ class InvoiceProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, CreateInvoiceProduct $createInvoiceProduct)
     {
-            
-             $product = new InvoiceProduct();
-             $product->invoice_id = $request->invoice_id;
-             $product->number = $request->number;
-             $product->productName = $request->productName;
-             $product->details = $request->details;
-             $product->quantity = $request->quantity;
-             $product->price = $request->price;
-             $product->linetotal = $request->linetotal;
-             $product->storeDisabledProduct = $request->storeDisabledProduct;
-             $product->disableProduct = $request->disableProduct;
-
-             $product->save();
+        $createInvoiceProduct->create($request);
     }
 
     /**

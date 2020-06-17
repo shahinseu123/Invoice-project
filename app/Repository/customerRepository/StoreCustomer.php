@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Repository\customerRepository\StoreCustomer;
+namespace App\Repository\customerRepository;
 
 use App\Model\Customer;
 
-class StoreCustomer {
-    public function createCustomer($request){
+class StoreCustomer
+{
+    public function createCustomer($request)
+    {
         $customer = new Customer();
         $customer->name = $request->name;
         $customer->email = $request->email;
